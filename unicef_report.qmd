@@ -1,0 +1,292 @@
+---
+title: "UNICEF Global Inequalities Report"
+author: "Rahul Chauhan"
+format:
+  html:
+    embed-resources: true
+    code-fold: true
+    theme: cosmo
+    css: styles.css
+editor: visual
+---
+::: {.hidden}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+:::
+# UNICEF Report: Maternal & Child Health Inequality
+
+🌍 Introduction
+
+Maternal health, child nutrition, and economic growth are deeply interconnected dimensions of human development.  
+Using UNICEF and geospatial data, this report explores **where** and **why** inequalities persist, from nutrition deficits among young children to broader economic disparities.  
+Through maps, bar charts, bubble charts, and indicator comparisons, we aim to **highlight critical patterns** and **advocate for targeted global interventions** that can drive transformational change.
+
+---
+
+
+```{python}
+print("""
+Understanding inequalities in maternal and child health is crucial for achieving better global outcomes.
+This report focuses on critical indicators such as children's nutrition (fruit and vegetable intake) and maternal health behavior (HIV testing).
+""")
+
+
+# ---
+# World Map: Zero Fruit/Veg Intake
+# ---
+
+print("""
+\n\U0001F30D World Map: Zero Fruit/Veg Intake
+
+> Question:
+> Which regions have the highest proportion of children (6–23 months) with zero fruit and vegetable intake?
+> Poor dietary diversity in early childhood can severely impact growth and development.
+> This map helps identify critical hotspots for targeted nutritional interventions.
+""")
+
+#| label: world-map 
+#| warning: false 
+#| message: false
+
+
+import geopandas as gpd
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from plotnine import ggplot, aes, geom_line, geom_point, facet_wrap, labs, theme_minimal
+
+
+# Load datasets
+indicator_2 = pd.read_csv("unicef_indicator_2.csv")
+world = gpd.read_file("ne_110m_admin_0_countries.shp")
+
+
+
+# Prepare zero fruit/veg data
+zero_veg = indicator_2[indicator_2["indicator"] == "Zero vegetable or fruit consumption (6-23months)"].copy()
+zero_veg["obs_value"] = pd.to_numeric(zero_veg["obs_value"], errors="coerce")
+zero_veg = zero_veg.dropna(subset=["obs_value"])
+zero_veg_latest = zero_veg[zero_veg["time_period"] == zero_veg["time_period"].max()]
+zero_veg_country = zero_veg_latest.groupby("country", as_index=False)["obs_value"].max()
+
+# Merge with world map
+merged = world.merge(zero_veg_country, how="left", left_on="NAME", right_on="country")
+
+# Plot
+fig, ax = plt.subplots(1, 1, figsize=(14, 7))
+merged.plot(column="obs_value", cmap="OrRd", linewidth=0.8, ax=ax, edgecolor='0.8',
+            legend=True, missing_kwds={"color": "lightgrey", "label": "No Data"})
+ax.set_title("Global Map: Children (6–23 months) with Zero Fruit/Vegetable Intake", fontsize=15)
+ax.axis('off')
+plt.tight_layout()
+plt.show()
+
+```
+
+
+
+```{python}
+print("""
+🏆 Top 10 Countries: Highest Zero Fruit/Veg Intake
+
+> Question:
+> Which countries are most affected by zero fruit and vegetable intake among young children?
+>Identifying the top 10 countries helps prioritize urgent action and resource allocation.
+""")
+
+#| label: top10-zero-veg #| fig-cap: "Top 10 countries with the highest percentage of young children lacking fruit and vegetable consumption, signaling urgent nutritional intervention needs." #| warning: false #| message: false
+
+# Sort and select top 10
+top10 = zero_veg_country.sort_values("obs_value", ascending=False).head(10)
+
+# Plot
+
+plt.figure(figsize=(8,6))
+sns.barplot(data=top10, y="country", x="obs_value", palette="Reds_r", hue="country", legend=False)
+plt.title("Top 10 Countries - Children (6–23 months) with Zero Fruit/Vegetable Intake", fontsize=14)
+plt.xlabel("Percentage (%)")
+plt.ylabel("Country")
+plt.xlim(0, 100)
+plt.tight_layout()
+plt.show()
+
+```
+
+```{python}
+print("""
+💬 Bubble Chart: Top 15 Countries by GDP Growth
+
+> Question:
+> Which countries are growing the fastest economically, and how does their population size relate to growth?
+> This bubble chart helps visualize top performers, and highlights disparities between small and large nations.
+
+""")
+
+#| label: bubble-gdp #| fig-cap: "Top 15 countries ranked by GDP growth rate, with bubble size representing population; key insights into economic expansion dynamics in 2023." #| warning: false #| message: false
+
+import pandas as pd
+from plotnine import *
+
+
+# Load the cleaned data
+df = pd.read_csv('unicef_cleaned_data.csv')
+
+# Pick the latest available year
+latest_year = df['year'].max()
+gdp_df = df[df['year'] == latest_year]
+
+# Filter necessary columns
+bubble_df = gdp_df[['country', 'GDP growth (annual %)', 'Population, total']].dropna()
+
+# Get the Top 15 countries by GDP
+top_countries = bubble_df.sort_values('GDP growth (annual %)', ascending=False).head(15)
+
+# Mark top and bottom countries
+top_country = top_countries.iloc[0]['country']
+bottom_country = top_countries.iloc[-1]['country']
+
+top_countries['highlight'] = top_countries['country'].apply(
+    lambda x: 'Top GDP' if x == top_country else ('Lowest GDP' if x == bottom_country else 'Other')
+)
+
+# Create the bubble chart
+(
+    ggplot(top_countries, aes(x='country', y='GDP growth (annual %)', size='Population, total', color='highlight')) +
+    geom_point(alpha=0.7) +
+    geom_text(aes(label='country'), va='bottom', ha='center', size=8) +  # <-- fixed here!
+    scale_y_log10() +
+    scale_size_continuous(range=[4, 12]) +
+    scale_color_manual(values={
+        'Top GDP': 'gold',
+        'Lowest GDP': 'red',
+        'Other': 'skyblue'
+    }) +
+    labs(
+        title=f'Top 15 Countries by GDP (Log Scale) - {latest_year}',
+        x='Country',
+        y='GDP (current US$, log scale)',
+        size='Population',
+        color='Highlight'
+    ) +
+    theme_minimal() +
+    theme(
+        axis_text_x=element_text(rotation=45, hjust=1),
+        figure_size=(16, 8),
+        legend_position='right'
+    )
+)
+
+
+```
+
+#| fig-cap: "Normalized comparison of GDP growth, life expectancy, military expenditure, inflation, and population among the top 5 fastest-growing economies."
+```{python}
+print("""
+📈 Line Chart: Comparison of Key Indicators Across Top 5 Countries
+
+> Question:
+> Beyond GDP, how do top-growing economies perform on health, inflation, military spending, and demographics?
+> This multi-indicator line chart helps unpack multidimensional strengths and weaknesses across countries.
+""")
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import MinMaxScaler
+
+
+
+# Load the data
+df = pd.read_csv('unicef_cleaned_data.csv')
+
+# Pick the latest year
+latest_year = df['year'].max()
+df_latest = df[df['year'] == latest_year]
+
+# Select top 5 countries by GDP growth
+top_countries = df_latest.nlargest(5, 'GDP growth (annual %)')
+
+# Correct indicators (existing in your file)
+indicators = [
+    'GDP growth (annual %)',
+    'Life expectancy at birth, total (years)',
+    'Military expenditure (% of GDP)',
+    'Inflation, consumer prices (annual %)',
+    'Population, total'
+]
+
+# Prepare the data
+line_df = top_countries[['country'] + indicators].copy()
+
+# Scale Population down to millions
+line_df['Population (millions)'] = line_df['Population, total'] / 1e6
+line_df.drop(columns=['Population, total'], inplace=True)
+
+# Update indicators list
+indicators_final = [
+    'GDP growth (annual %)',
+    'Life expectancy at birth, total (years)',
+    'Military expenditure (% of GDP)',
+    'Inflation, consumer prices (annual %)',
+    'Population (millions)'
+]
+
+# Fill missing values smartly (column mean)
+line_df[indicators_final] = line_df[indicators_final].fillna(line_df[indicators_final].mean())
+
+# Remove columns that are still all NaN (if any)
+line_df = line_df.dropna(axis=1, how='all')
+
+# Update the list of indicators after cleaning
+indicators_final = [col for col in line_df.columns if col != 'country']
+
+# Normalize
+scaler = MinMaxScaler()
+line_df[indicators_final] = scaler.fit_transform(line_df[indicators_final])
+
+# Melt for plotting
+line_melted = line_df.melt(id_vars='country',
+                           value_vars=indicators_final,
+                           var_name='Indicator',
+                           value_name='Normalized Value')
+
+# Plot
+plt.figure(figsize=(14, 8))
+sns.set_style("whitegrid")
+
+for country in line_melted['country'].unique():
+    subset = line_melted[line_melted['country'] == country]
+    plt.plot(subset['Indicator'], subset['Normalized Value'],
+             marker='o',
+             linestyle='--',
+             label=country,
+             markersize=8,
+             linewidth=2.5)
+
+# Decorations
+plt.title(f'Comparison of Top 5 Countries Across Key Indicators - {latest_year}', fontsize=18, weight='bold')
+plt.xlabel('Indicator', fontsize=14)
+plt.ylabel('Normalized Value (0-1)', fontsize=14)
+plt.xticks(rotation=45, ha='right', fontsize=12)
+plt.yticks(fontsize=12)
+plt.legend(title='Country', fontsize=12, title_fontsize=13)
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.tight_layout()
+plt.show()
+
+
+
+```
+
+
+📈 Conclusion:
+This analysis highlights critical inequalities across **nutrition**, **health**, and **economic growth dimensions globally**.
+While some countries demonstrate robust **GDP growth**, alarming rates of poor child nutrition persist in others, often disconnected from economic performance.
+Addressing maternal health services and improving child nutrition together could yield synergistic benefits, advancing both **health equity** and **economic resilience** for the world's most vulnerable populations.
+
+📚 References:
+
+- Data Source: UNICEF Open Data
+
+- Geospatial Source: Natural Earth Dataset
+
+

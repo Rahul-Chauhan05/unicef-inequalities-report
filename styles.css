@@ -1,0 +1,204 @@
+/* --- Base Styles --- */
+body {
+  font-family: 'Inter', 'Poppins', sans-serif;
+  background: linear-gradient(to bottom right, #f5f7fa, #e4ecf7);
+  color: #2c3e50;
+  line-height: 1.75;
+  font-size: 1.05rem;
+  padding: 1rem 2rem;
+}
+
+/* --- Headings --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  color: #1a202c;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  border-bottom: 4px solid #0d6efd;
+  padding-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  border-left: 4px solid #0d6efd;
+  padding-left: 0.75rem;
+}
+
+/* --- Paragraphs --- */
+p {
+  margin-bottom: 1rem;
+}
+
+/* --- Code Blocks --- */
+pre, code {
+  background-color: #f6f8fa;
+  padding: 0.75em;
+  border-radius: 8px;
+  font-family: 'Fira Code', 'Courier New', Courier, monospace;
+  font-size: 0.95rem;
+  overflow-x: auto;
+  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+}
+
+/* --- Blockquotes --- */
+blockquote {
+  border-left: 5px solid #0d6efd;
+  padding-left: 1.25rem;
+  background-color: #e9ecef;
+  color: #495057;
+  font-style: italic;
+  margin: 1.5em 0;
+}
+
+/* --- Tables --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  margin: 2rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  text-align: left;
+}
+
+th {
+  background-color: #0d6efd;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* --- Images --- */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5em 0;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* --- Horizontal Line --- */
+hr {
+  border: 0;
+  height: 2px;
+  background: linear-gradient(to right, #0d6efd, transparent);
+  margin: 3rem 0;
+}
+
+/* --- Links --- */
+a {
+  color: #0d6efd;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* --- Cards and Info Boxes --- */
+.card {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  margin: 2rem 0;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* --- Visualization Enhancement (Plot Containers) --- */
+.plot-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* --- Custom Titles inside Cards or Plots --- */
+.plot-title {
+  position: relative;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0d6efd;
+  margin-bottom: 2rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plot-title::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: #0d6efd;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+/* --- Highlight Badges (for key facts or numbers) --- */
+.badge {
+  display: inline-block;
+  background: #0d6efd;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.4em 0.8em;
+  font-size: 0.9rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge.secondary {
+  background: #6c757d;
+}
+
+.badge.success {
+  background: #198754;
+}
+
+.badge.warning {
+  background: #ffc107;
+  color: #212529;
+}
+
+.badge.danger {
+  background: #dc3545;
+}
+
+/* --- UNICEF-Themed Color Accents --- */
+:root {
+  --primary-blue: #1CABE2; /* UNICEF Blue */
+  --accent-blue: #66b2ff;
+  --light-background: #f5faff;
+}
+
+body {
+  background: linear-gradient(to bottom right, var(--light-background), #e4f2fb);
+}
+
+a, .plot-title {
+  color: var(--primary-blue);
+}
+
+a:hover {
+  color: var(--accent-blue);
+}
